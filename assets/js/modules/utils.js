@@ -1,7 +1,6 @@
-// General functions
-var utils = {
-	// Makes an API-request
-	request: function(url, callback) {
+var utils = (function() {
+	// Makes an API-request with fetch
+	var request = function(url, callback) {
 		fetch(url)
 			.then(function(response) {
 				if (response.status !== 200) {
@@ -17,30 +16,71 @@ var utils = {
 			.catch(function(err) {
 				console.error('Fetch Error: ', err);
 			});
-	},
+	};
+
+	// JSONP request for CORS API-requests
+	var JSONP = (function() {
+		var send = function(url, settings) {
+			var head = document.querySelector('head');
+			var timeoutTrigger = window.setTimeout(function() {
+				settings.onTimeout();
+			}, settings.timeout);
+
+			window['callback'] = function(data){
+				window.clearTimeout(timeoutTrigger);
+				settings.onSuccess(data);
+			}
+
+			var script = document.createElement('script');
+			script.type = 'text/javascript';
+			script.async = true;
+			script.src = url;
+			head.appendChild(script);
+		}
+
+		return {
+			send: send
+		};
+
+	}) ();
 
 	// Checks index of value in chosen array
-	checkArray: function(value, arr) {
+	var checkArray = function(value, arr) {
 		return arr.indexOf(value);
-	},
+	};
 
 	// Converts nodelist to array
-	convertToArray: function(arr) {
+	var convertToArray = function(arr) {
 		return Array.prototype.slice.call(arr);
-	},
+	};
 
 	// Clears an <ul> / <ol>
-	clearList: function(list) {
+	var clearList = function(list) {
 		while (list.firstChild) {
 			list.removeChild(list.firstChild);
 		}
-	},
+	};
 
-	encrypt: function(string) {
+	// Provides user with feedback
+	var feedback = function(msg, state) {
+		var label = document.querySelector('#feedback');
 
-	},
+		label.textContent = msg;
+		label.classList.add('active');
+		label.classList.add(state);
 
-	decrypt: function(string) {
+		setTimeout(function() {
+			label.classList.remove('active');
+		}, 2500);
+	};
 
-	}
-};
+	return {
+		request: request,
+		JSONP: JSONP,
+		checkArray: checkArray,
+		convertToArray: convertToArray,
+		clearList: clearList,
+		feedback: feedback
+	};
+
+}) ();
