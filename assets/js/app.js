@@ -1,14 +1,17 @@
 var app = (function() {
 	var init = function(data) {
-		template.render(data.pages);
-		router.init(data.pages);
+		template.render.pages();
+		router.init(template.navigation);
+		search.init();
 	};
 
 	return {
 		init: init,
 		template: template,
-		router: router
-	}
+		router: router,
+		search: search
+	};
+
 })();
 
 app.init(config);
