@@ -6,16 +6,39 @@
 
 	<title>Funda SPA Prototype</title>
 
+	<!-- Custom elements -->
+	<link rel="import" href="./assets/components/funda-logo.html" />
+
+	<!-- Styles -->
+	<script src="https://use.typekit.net/pnh6wsp.js"></script>
+	<script>try{Typekit.load({ async: true });}catch(e){}</script>
 	<link rel="stylesheet" type="text/css" href="./assets/css/main.css">
 
+	<!-- Scripts -->
 	<script src="./assets/js/modules/template.js" defer></script>
 	<script src="./assets/js/modules/router.js" defer></script>
+	<script src="./assets/js/modules/search.js" defer></script>
 	<script src="./assets/js/modules/utils.js" defer></script>
 	<script src="./assets/js/config.js" defer></script>
 	<script src="./assets/js/app.js" defer></script>
 </head>
 <body>
 	<header>
+		<section>
+			<funda-logo></funda-logo>
+			<span id="feedback"></span>
+		</section>
+
+		<form action="">
+			<fieldset>
+				<input type="text">
+				<ul id="suggestions"></ul>
+			</fieldset>
+			<fieldset>
+				<button id="submit">Verzenden</button>
+			</fieldset>
+		</form>
+
 		<nav></nav>
 	</header>
 
@@ -25,10 +48,16 @@
 
 	<section id="two">
 		<h2></h2>
+		<ul id="results"></ul>
 	</section>
 
 	<section id="three">
 		<h2></h2>
 	</section>
+
+	<div id="map-placeholder"></div>
+
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB8NhMeE74Nudqs0WtNy0DaDxnVH_9YLdU&callback=myFundaTest.initMap" async defer></script>
+	<script src="./assets/js/funda-map.js"></script>
 </body>
 </html>
