@@ -1,11 +1,5 @@
-// Templating
-var template = {
-	/*
-		Template is based on following source.
-		Source: Tutorial for native Javasript templating
-		URL: http://codoki.com/2015/09/01/native-javascript-templating/
-	*/
-	data: [
+var template = (function() {
+	var data = [
 		{
 			template: 'one',
 			title: 'HOMEPAGE'
@@ -18,25 +12,71 @@ var template = {
 			template: 'three',
 			title: 'PAGINA 3'
 		}
-	],
+	];
 
-	render: function(pagelist) {
-		template.data.map(function(page) {
-			var section = document.querySelector('#' + page.template);
+	var navigation = data.map(function(page) {
+		return page.template;
+	});
 
-			switch (page.template) {
-				case 'one':
-					section.querySelector('h2').textContent = page.title;
-				break;
+	var render = {
+		pages: function(pagelist) {
+			render.menu(navigation);
+			render.mosaic(navigation);
 
-				case 'two':
-					section.querySelector('h2').textContent = page.title;
-				break;
+			data.map(function(page) {
+				var section = document.querySelector('#' + page.template);
 
-				case 'three':
-					section.querySelector('h2').textContent = page.title;
-				break;
-			}
-		});
-	}
-};
+				switch (page.template) {
+					case 'one':
+						section.querySelector('h2').textContent = page.title;
+					break;
+
+					case 'two':
+						section.querySelector('h2').textContent = page.title;
+					break;
+
+					case 'three':
+						section.querySelector('h2').textContent = page.title;
+					break;
+				}
+			});
+		},
+
+		menu: function(pagelist) {
+			var nav = document.querySelector('nav');
+			var ul = document.createElement('ul');
+
+			pagelist.map(function(link) {
+				var li = document.createElement('li');
+				var anchor = document.createElement('a');
+
+				// Early exit to prevent details-page from being rendered in the navigation
+				if (link === 'detail') {
+					return false;
+				}
+
+				anchor.href = '#' + link;
+				if (link === 'send') {
+					anchor.classList.add('current');
+				}
+
+				anchor.textContent = link;
+				anchor.setAttribute('data-anchor', link);
+
+				li.appendChild(anchor);
+				ul.appendChild(li);
+				nav.appendChild(ul);
+			});
+		},
+
+		mosaic: function() {
+			console.log('render mosaic!');
+		}
+	};
+
+	return {
+		navigation: navigation,
+		render: render
+	};
+
+}) ();
