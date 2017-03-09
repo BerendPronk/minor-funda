@@ -1,17 +1,17 @@
 var utils = (function() {
-	// Sets homepage if parameter is set to true
-	var homepage = function(state) {
-		var homeSections = ['header', 'footer'];
-		homeSections.map(function(section) {
+	// Sets splash screen if parameter is set to true
+	var splashScreen = function(state) {
+		var splashSections = ['header', 'footer'];
+		splashSections.map(function(section) {
 			var element = document.querySelector(section);
 
-			// Renders mosaic background
-			template.render.mosaic(template.navigation);
-
 			if (state === true) {
-				element.classList.add('home');
+				// Renders mosaic background
+				template.render.mosaic(template.navigation);
+
+				element.classList.add('splash');
 			} else {
-				element.classList.remove('home');
+				element.classList.remove('splash');
 			}
 		});
 	};
@@ -83,6 +83,22 @@ var utils = (function() {
 		return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 	};
 
+	// Sets periods on number input
+	var setPeriods = function(input, value) {
+		var numbers = value.split("").reverse();
+		var periods = [];
+
+		for (var index = 1; index <= numbers.length; index++) {
+			periods.push(numbers[index - 1]);
+			if (index % 3 === 0 && index != numbers.length) {
+				periods.push('.');
+			}
+		}
+
+		var val = periods.reverse().join("");
+		input.parentNode.setAttribute('period-value', val);
+	};
+
 	// Provides user with feedback
 	var feedback = function(msg, state) {
 		var label = document.querySelector('#feedback');
@@ -98,13 +114,14 @@ var utils = (function() {
 	};
 
 	return {
-		homepage: homepage,
+		splashScreen: splashScreen,
 		request: request,
 		JSONP: JSONP,
 		checkArray: checkArray,
 		convertToArray: convertToArray,
 		clearList: clearList,
 		numberWithPeriods: numberWithPeriods,
+		setPeriods: setPeriods,
 		feedback: feedback
 	};
 
