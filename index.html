@@ -15,14 +15,20 @@
 	<link rel="stylesheet" type="text/css" href="./assets/css/main.css">
 
 	<!-- Scripts -->
+	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB8NhMeE74Nudqs0WtNy0DaDxnVH_9YLdU&callback=myFundaTest.initMap" async defer></script>
+	<script src="./assets/js/funda-map.js" defer></script>
+
 	<script src="./assets/js/modules/template.js" defer></script>
 	<script src="./assets/js/modules/router.js" defer></script>
 	<script src="./assets/js/modules/search.js" defer></script>
 	<script src="./assets/js/modules/utils.js" defer></script>
 	<script src="./assets/js/config.js" defer></script>
 	<script src="./assets/js/app.js" defer></script>
+
+	<script id="__bs_script__">//<![CDATA[
+    document.write("<script async src='/browser-sync/browser-sync-client.js?v=2.18.8'><\/script>".replace("HOST", location.hostname));
+//]]></script>
 </head>
-<body>
 	<header>
 		<section>
 			<funda-logo></funda-logo>
@@ -31,7 +37,8 @@
 
 		<form action="">
 			<fieldset>
-				<input type="text">
+				<label for="search">Zoek woningen</label>
+				<input id="search" type="text" placeholder="Plaats, buurt, adres, et cetera">
 				<ul id="suggestions"></ul>
 			</fieldset>
 			<fieldset>
@@ -42,22 +49,54 @@
 		<nav></nav>
 	</header>
 
-	<section id="one">
-		<h2></h2>
-	</section>
+	<ul id="pages">
+		<li>
+			<section id="detail">
+				<ul id="breadcrumbs"></ul>
 
-	<section id="two">
-		<h2></h2>
-		<ul id="results"></ul>
-	</section>
+				<h2></h2>
+				<h3></h3>
 
-	<section id="three">
-		<h2></h2>
-	</section>
+				<img>
 
-	<div id="map-placeholder"></div>
+				<p id="detailPrice"></p>
 
-	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB8NhMeE74Nudqs0WtNy0DaDxnVH_9YLdU&callback=myFundaTest.initMap" async defer></script>
-	<script src="./assets/js/funda-map.js"></script>
+				<article></article>
+
+				<ul>
+					<li>hier extra gegevens</li>
+				</ul>
+			</section>
+		</li>
+		<li>
+			<section id="resultaten">
+				<h2></h2>
+
+				<p id="resultAmount"></p>
+
+				<ul id="results"></ul>
+
+				<p id="noResults"></p>
+			</section>
+		</li>
+		<li>
+			<section id="kaart">
+				<h2></h2>
+
+				<div id="mapPlaceholder"></div>
+			</section>
+		</li>
+		<li>
+			<section id="favorieten">
+				<h2></h2>
+
+				<p id="noFavorites"></p>
+			</section>
+		</li>
+	</ul>
+
+	<footer role="presentation">
+		<ul id="mosaic"></ul>
+	</footer>
 </body>
 </html>
