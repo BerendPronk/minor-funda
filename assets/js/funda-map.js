@@ -98,7 +98,7 @@ FundaMapType.prototype = {
 
 var myFundaTest = new FundaTest({
 	sInstanceName: 'myFundaTest',
-	sMapId: 'map-placeholder',
+	sMapId: 'mapPlaceholder',
 	sAanbodApiBasePath: 'http://funda.kyrandia.nl/feeds/Aanbod.svc/json',
 	sApiKey: '271175433a7c4fe2a45750d385dd9bfd'
 });
