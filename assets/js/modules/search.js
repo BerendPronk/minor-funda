@@ -154,11 +154,13 @@ var search = (function() {
 						var resultAmount = document.querySelector('#resultAmount');
 						resultAmount.innerHTML = '';
 
+						// Hides empty result message
 						noResults.classList.remove('hidden');
 
 						utils.feedback('Geen resultaten', 'negative');
 
 						return false;
+
 					} else if (results.length === 1) {
 						utils.feedback('1 resultaat', 'positive');
 					} else {
@@ -170,7 +172,7 @@ var search = (function() {
 					noResults.classList.add('hidden');
 
 					// Renders a list-item for each result
-					template.render.results(results);
+					template.render.result('#results', results);
 
 					router.navigate('resultaten');
 				});
@@ -204,16 +206,35 @@ var search = (function() {
 				function(data) {
 					template.render.detail(data);
 
-					get.breadCrumbs(data.Adres);
-
 					router.navigate('detail');
 				});
 		},
 
+		// Requests information for each item in favorites
+		favorites: function(type, favorites) {
+			var favoritesList = document.querySelector('#favorites');
+			// Hides empty favorites message
+			var noFavorites = document.querySelector('#noFavorites');
+			noFavorites.classList.add('hidden');
+
+			// Clears favorites before adding a new list
+			utils.clearList(favoritesList);
+
+			favorites.map(function(id, index) {
+				utils.request('http://funda.kyrandia.nl/feeds/Aanbod.svc/json/detail/' + config.apiKey + '/' + type[index] + '/' + id + '/',
+					function(data) {
+						// Stores data in array for the render function to loop through
+						var results = [data];
+
+						template.render.result('#favorites', results);
+					});
+			})
+		},
+
 		// Renders breadcrumb for detail page
-		breadCrumbs: function(current) {
+		breadCrumbs: function(from, current) {
 			var breadCrumbs = document.querySelector('#breadcrumbs');
-			var breadCrumbList = ['Resultaten', current];
+			var breadCrumbList = [from, current];
 
 			utils.clearList(breadCrumbs);
 			breadCrumbList.map(function(crumb, index) {
@@ -224,7 +245,7 @@ var search = (function() {
 					anchor.textContent = crumb;
 					anchor.href = "#";
 					anchor.addEventListener('click', function() {
-						router.navigate('resultaten');
+						router.navigate(crumb);
 					});
 
 					newCrumb.appendChild(anchor);

@@ -8,11 +8,12 @@ var template = (function() {
 		{
 			template: 'resultaten',
 			title: 'Resultaten',
-			noResults: 'Geen resultaten'
+			noResults: 'Geen resultaten gevonden.'
 		},
 		{
 			template: 'favorieten',
-			title: 'Favoriete woningen'
+			title: 'Favoriete woningen',
+			noFavorites: 'Er zijn nog geen favorieten toegevoegd.'
 		}
 	];
 
@@ -27,6 +28,11 @@ var template = (function() {
 			// Renders menu with navigation links
 			render.menu(navigation);
 
+			// Render favorites page if user has added any favorites
+			if (localStorage.favoritesID) {
+				search.get.favorites(storage.favorites.type(), storage.favorites.id());
+			}
+
 			data.map(function(page) {
 				var section = document.querySelector('#' + page.template);
 
@@ -36,28 +42,29 @@ var template = (function() {
 						section.querySelector('#noResults').textContent = page.noResults;
 					break;
 
-					case 'kaart':
-						section.querySelector('h2').textContent = page.title;
-					break;
-
 					case 'favorieten':
 						section.querySelector('h2').textContent = page.title;
+						section.querySelector('#noFavorites').textContent = page.noFavorites;
 					break;
 				}
 			});
 		},
 
 		// Renders list-item for each result given in parameter
-		results: function(results) {
-			var resultList = document.querySelector('#results');
+		result: function(list, results) {
+			var resultList = document.querySelector(list);
 
-			utils.clearList(resultList);
+			// Clear list before adding data, except for the favorites list
+			if (list !== '#favorites') {
+				utils.clearList(resultList);
+			}
 
 			results.map(function(result) {
 				var resultBlock = document.createElement('li');
-				var resultContent = document.createElement('ul');
 
 				var img = document.createElement('img');
+				var fav = document.createElement('input');
+				var favLabel = document.createElement('label');
 				var address = document.createElement('h3');
 				var addressLink = document.createElement('a');
 				var zipCity = document.createElement('p');
@@ -66,7 +73,6 @@ var template = (function() {
 				var added = document.createElement('span');
 
 				var data = {
-					id: result.Id,
 					type: function() {
 						if (result.Prijs.Koopprijs) {
 							return 'koop';
@@ -74,9 +80,7 @@ var template = (function() {
 							return 'huur';
 						}
 					},
-					img: result.FotoLarge,
 					address: result.Adres,
-					zipCity: result.Postcode + ', ' + result.Woonplaats,
 					price: function() {
 						if (result.Prijs.Koopprijs && !result.Prijs.Huurprijs) {
 							return '<strong>€ ' + utils.numberWithPeriods(result.Prijs.Koopprijs) + ' <abbr title="Kosten Koper">k.k.</abbr></strong>';
@@ -84,24 +88,71 @@ var template = (function() {
 							return '<strong>€ ' + utils.numberWithPeriods(result.Prijs.Huurprijs) + ' <abbr title="Per maand">/mnd</abbr></strong>';
 						}
 					},
-					area: function() {
-						if (result.Perceeloppervlakte) {
-							return result.Woonoppervlakte + 'm² / ' + result.Perceeloppervlakte + ' • ' + result.AantalKamers + ' kamers';
-						} else {
-							return result.Woonoppervlakte + 'm² ' + ' • ' + result.AantalKamers + ' kamers';
-						}
-					},
 					added: result.AangebodenSindsTekst
 				};
 
-				// Sets content of new elements
+				// Sets data object properties for multiple request possibilities
+				if (list === '#favorites') {
+					data.id = result.InternalId;
+					data.img = result.HoofdFoto;
+					data.zipCity = result.Postcode + ', ' + result.Plaats
+					data.area = function() {
+						if (result.PerceelOppervlakte) {
+							return result.WoonOppervlakte + 'm² / ' + result.PerceelOppervlakte + 'm² • ' + result.AantalKamers + ' kamers';
+						} else {
+							return result.WoonOppervlakte + 'm² ' + ' • ' + result.AantalKamers + ' kamers';
+						}
+					};
+				} else {
+					data.id = result.Id;
+					data.img = result.FotoLarge;
+					data.zipCity = result.Postcode + ', ' + result.Woonplaats;
+					data.area = function() {
+						if (result.Perceeloppervlakte) {
+							return result.Woonoppervlakte + 'm² / ' + result.Perceeloppervlakte + 'm² • ' + result.AantalKamers + ' kamers';
+						} else {
+							return result.Woonoppervlakte + 'm² ' + ' • ' + result.AantalKamers + ' kamers';
+						}
+					};
+				}
+
+				// Sets content and interaction for new elements
 				img.src = data.img;
 				img.alt = 'Foto van ' + data.address;
+
+				fav.type = 'checkbox';
+				fav.id = data.id;
+				fav.className = 'fav';
+				fav.checked = storage.check(data.id);
+				fav.addEventListener('change', function() {
+					storage.set(data.type(), this);
+
+					// Sets item on favorites page
+					search.get.favorites(storage.favorites.type(), storage.favorites.id());
+
+					// Removes DOM-element from favorites list
+					if (list === '#favorites') {
+						var item = this.parentNode;
+
+						utils.removeFromList(item, resultList);
+					}
+				})
+				favLabel.setAttribute('for', data.id);
+				favLabel.className = 'fav-label';
 
 				addressLink.setAttribute('data-id', data.id);
 				addressLink.href = '#'; // Set empty link, for functionality without navigating
 				addressLink.textContent = data.address;
 				addressLink.addEventListener('click', function() {
+					// Sets breadcrumbs for detail-pages
+					if (list === '#favorites') {
+						search.get.breadCrumbs('favorieten', data.address);
+					}
+					else {
+						search.get.breadCrumbs('resultaten', data.address);
+					}
+
+					// Sets detail data and navigates to detail page
 					search.get.details(data.type(), data.id);
 				});
 				address.appendChild(addressLink);
@@ -115,15 +166,16 @@ var template = (function() {
 				added.insertAdjacentHTML('afterbegin', data.added);
 
 				// Appends new elements to each result
-				resultContent.appendChild(img);
-				resultContent.appendChild(address);
-				resultContent.appendChild(zipCity);
-				resultContent.appendChild(price);
-				resultContent.appendChild(area);
-				resultContent.appendChild(added);
+				resultBlock.appendChild(img);
+				resultBlock.appendChild(fav);
+				resultBlock.appendChild(favLabel);
+				resultBlock.appendChild(address);
+				resultBlock.appendChild(zipCity);
+				resultBlock.appendChild(price);
+				resultBlock.appendChild(area);
+				resultBlock.appendChild(added);
 
 				// Appends content to list items
-				resultBlock.appendChild(resultContent);
 				resultList.appendChild(resultBlock);
 			});
 		},
@@ -167,8 +219,6 @@ var template = (function() {
 
 				desc.appendChild(p);
 			});
-
-			console.log(data);
 		},
 
 		// Renders menu based on data array with content declarations
@@ -204,7 +254,7 @@ var template = (function() {
 
 		// Renders mosaic for homepage
 		mosaic: function() {
-			var city = '';
+			var city = 'limmen';
 			utils.request('http://funda.kyrandia.nl/feeds/Aanbod.svc/json/' + config.apiKey + '/?type=koop&zo=/' + city + '/&page=' + 1 + '&pagesize=' + 24,
 				function(data) {
 					var results = data.Objects;
