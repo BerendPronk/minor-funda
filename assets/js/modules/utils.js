@@ -1,4 +1,21 @@
 var utils = (function() {
+	// Sets homepage if parameter is set to true
+	var homepage = function(state) {
+		var homeSections = ['header', 'footer'];
+		homeSections.map(function(section) {
+			var element = document.querySelector(section);
+
+			// Renders mosaic background
+			template.render.mosaic(template.navigation);
+
+			if (state === true) {
+				element.classList.add('home');
+			} else {
+				element.classList.remove('home');
+			}
+		});
+	};
+
 	// Makes an API-request with fetch
 	var request = function(url, callback) {
 		fetch(url)
@@ -54,11 +71,16 @@ var utils = (function() {
 		return Array.prototype.slice.call(arr);
 	};
 
-	// Clears an <ul> / <ol>
+	// Removes every child of selected element
 	var clearList = function(list) {
 		while (list.firstChild) {
 			list.removeChild(list.firstChild);
 		}
+	};
+
+	// Converts number to thousand notation
+	var numberWithPeriods = function(number) {
+		return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 	};
 
 	// Provides user with feedback
@@ -66,8 +88,9 @@ var utils = (function() {
 		var label = document.querySelector('#feedback');
 
 		label.textContent = msg;
-		label.classList.add('active');
+		label.className = '';
 		label.classList.add(state);
+		label.classList.add('active');
 
 		setTimeout(function() {
 			label.classList.remove('active');
@@ -75,11 +98,13 @@ var utils = (function() {
 	};
 
 	return {
+		homepage: homepage,
 		request: request,
 		JSONP: JSONP,
 		checkArray: checkArray,
 		convertToArray: convertToArray,
 		clearList: clearList,
+		numberWithPeriods: numberWithPeriods,
 		feedback: feedback
 	};
 
