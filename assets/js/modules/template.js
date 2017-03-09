@@ -11,10 +11,6 @@ var template = (function() {
 			noResults: 'Geen resultaten'
 		},
 		{
-			template: 'kaart',
-			title: 'Kaart'
-		},
-		{
 			template: 'favorieten',
 			title: 'Favoriete woningen'
 		}
@@ -28,8 +24,6 @@ var template = (function() {
 	var render = {
 		// Renders content on pages
 		pages: function(pagelist) {
-			utils.homepage(true);
-
 			// Renders menu with navigation links
 			render.menu(navigation);
 
@@ -73,11 +67,18 @@ var template = (function() {
 
 				var data = {
 					id: result.Id,
+					type: function() {
+						if (result.Prijs.Koopprijs) {
+							return 'koop';
+						} else {
+							return 'huur';
+						}
+					},
 					img: result.FotoLarge,
 					address: result.Adres,
 					zipCity: result.Postcode + ', ' + result.Woonplaats,
 					price: function() {
-						if (result.Prijs.Koopprijs) {
+						if (result.Prijs.Koopprijs && !result.Prijs.Huurprijs) {
 							return '<strong>€ ' + utils.numberWithPeriods(result.Prijs.Koopprijs) + ' <abbr title="Kosten Koper">k.k.</abbr></strong>';
 						} else {
 							return '<strong>€ ' + utils.numberWithPeriods(result.Prijs.Huurprijs) + ' <abbr title="Per maand">/mnd</abbr></strong>';
@@ -87,7 +88,7 @@ var template = (function() {
 						if (result.Perceeloppervlakte) {
 							return result.Woonoppervlakte + 'm² / ' + result.Perceeloppervlakte + ' • ' + result.AantalKamers + ' kamers';
 						} else {
-							return result.Woonoppervlakte + 'm² / ' + ' • ' + result.AantalKamers + ' kamers';
+							return result.Woonoppervlakte + 'm² ' + ' • ' + result.AantalKamers + ' kamers';
 						}
 					},
 					added: result.AangebodenSindsTekst
@@ -101,7 +102,7 @@ var template = (function() {
 				addressLink.href = '#'; // Set empty link, for functionality without navigating
 				addressLink.textContent = data.address;
 				addressLink.addEventListener('click', function() {
-					search.get.details(data.id);
+					search.get.details(data.type(), data.id);
 				});
 				address.appendChild(addressLink);
 
@@ -138,7 +139,7 @@ var template = (function() {
 
 			var detail = {
 				price: function() {
-					if (data.Koopprijs) {
+					if (data.Koopprijs && !data.Huurprijs) {
 						return '<strong>€ ' + utils.numberWithPeriods(data.Koopprijs) + ' <abbr title="Kosten Koper">k.k.</abbr></strong>';
 					} else {
 						return '<strong>€ ' + utils.numberWithPeriods(data.Huurprijs) + ' <abbr title="Per maand">/mnd</abbr></strong>';
@@ -203,7 +204,7 @@ var template = (function() {
 
 		// Renders mosaic for homepage
 		mosaic: function() {
-			var city = 'limmen';
+			var city = '';
 			utils.request('http://funda.kyrandia.nl/feeds/Aanbod.svc/json/' + config.apiKey + '/?type=koop&zo=/' + city + '/&page=' + 1 + '&pagesize=' + 24,
 				function(data) {
 					var results = data.Objects;
