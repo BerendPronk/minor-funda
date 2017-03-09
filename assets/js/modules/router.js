@@ -1,42 +1,22 @@
 var router = (function() {
 	var init = function(pagelist) {
-		navigate(pagelist[0]);
-
-		window.addEventListener('hashchange', function() {
-			router.navigate(window.location.hash.replace('#', ''));
-		});
+		navigate(pagelist[1]);
 	};
 
+	// Sets classes on page-switch
 	var navigate = function(path) {
 		var menulinks = utils.convertToArray(document.querySelectorAll('nav a'));
-
-		var hash = '#' + path;
-		window.location.hash = path;
+		var sectionList = document.querySelector('#pages');
 
 		menulinks.map(function(anchor) {
-			// Retrieves the hash part of the entire anchor-link
-			var link = anchor.href.substr(anchor.href.indexOf('#'), anchor.href.length);
-
-			if (link === hash) {
+			if (anchor.getAttribute('data-anchor') === path) {
 				anchor.classList.add('current');
 			} else {
 				anchor.classList.remove('current');
 			}
 		});
 
-		show(path);
-	};
-
-	var show = function(path) {
-		var sectionList = utils.convertToArray(document.querySelectorAll('body > section'));
-
-		sectionList.map(function(section) {
-			if (section.id === path) {
-				section.classList.remove('hidden');
-			} else {
-				section.classList.add('hidden');
-			}
-		});
+		sectionList.className = path.toLowerCase();
 	};
 
 	return {
