@@ -15,9 +15,6 @@
 	<link rel="stylesheet" type="text/css" href="./assets/css/main.css">
 
 	<!-- Scripts -->
-	<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB8NhMeE74Nudqs0WtNy0DaDxnVH_9YLdU&callback=myFundaTest.initMap" async defer></script>
-	<script src="./assets/js/funda-map.js" defer></script>
-
 	<script src="./assets/js/modules/template.js" defer></script>
 	<script src="./assets/js/modules/router.js" defer></script>
 	<script src="./assets/js/modules/search.js" defer></script>
@@ -25,9 +22,11 @@
 	<script src="./assets/js/config.js" defer></script>
 	<script src="./assets/js/app.js" defer></script>
 
-	<script id="__bs_script__">//<![CDATA[
-    document.write("<script async src='/browser-sync/browser-sync-client.js?v=2.18.8'><\/script>".replace("HOST", location.hostname));
-//]]></script>
+	<script id="__bs_script__">
+		//<![CDATA[
+		document.write("<script async src='/browser-sync/browser-sync-client.js?v=2.18.8'><\/script>".replace("HOST", location.hostname));
+		//]]>
+	</script>
 </head>
 	<header>
 		<section>
@@ -40,6 +39,38 @@
 				<label for="search">Zoek woningen</label>
 				<input id="search" type="text" placeholder="Plaats, buurt, adres, et cetera">
 				<ul id="suggestions"></ul>
+			</fieldset>
+			<fieldset id="filter">
+				<section class="filter-main">
+					<section class="filter-radio">
+						<input id="filterTypeBuy" type="radio" name="type" value="buy" checked>
+						<label for="filterTypeBuy" data-input="radio">
+							Koop
+						</label>
+						<input id="filterTypeRent" type="radio" name="type" value="rent">
+						<label for="filterTypeRent"  data-input="radio">
+							Huur
+						</label>
+					</section>
+					<input id="filterToggle" type="checkbox">
+					<label for="filterToggle" data-input="checkbox">
+						Prijs
+					</label>
+				</section>
+				<section class="filter-advanced">
+					<section class="filter-text">
+						<label for="filterPriceFrom">Prijs van</label>
+						<section class="filter-text-input">
+							<input id="filterPriceFrom" type="number" step="1000">
+						</section>
+					</section>
+					<section class="filter-text">
+						<label for="filterPriceTo">Prijs tot</label>
+						<section class="filter-text-input">
+							<input id="filterPriceTo" type="number" step="1000">
+						</section>
+					</section>
+				</section>
 			</fieldset>
 			<fieldset>
 				<button id="submit">Verzenden</button>
@@ -77,13 +108,6 @@
 				<ul id="results"></ul>
 
 				<p id="noResults"></p>
-			</section>
-		</li>
-		<li>
-			<section id="kaart">
-				<h2></h2>
-
-				<div id="mapPlaceholder"></div>
 			</section>
 		</li>
 		<li>
