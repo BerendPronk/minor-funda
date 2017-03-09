@@ -7,9 +7,31 @@ var search = (function() {
 				setInput(form.search.value);
 			}
 		});
+
+		// Hides suggestionbox and advanced filter on initialization
 		form.suggestions.classList.add('hidden');
+		form.filterAdvanced.classList.add('hidden');
+
+		// Toggles advanced filter
+		form.filterToggle.addEventListener('click', function() {
+			if (form.filterToggle.checked) {
+				form.filterAdvanced.classList.remove('hidden');
+				form.suggestions.classList.add('hidden');
+			} else {
+				form.filterAdvanced.classList.add('hidden');
+			}
+		});
+
+		// Adds periods to price-filter input
+		utils.convertToArray(form.filterPrice).map(function(input) {
+			input.addEventListener('input', function() {
+				utils.setPeriods(input, event.target.value);
+			});
+		});
+
 		form.submit.addEventListener('click', function() {
 			form.suggestions.classList.add('hidden');
+			form.filterAdvanced.classList.add('hidden');
 			get.results();
 		});
 	};
@@ -17,6 +39,15 @@ var search = (function() {
 	var form = {
 		search: document.querySelector('header form [type="text"]'),
 		suggestions: document.querySelector('header form #suggestions'),
+		filterToggle: document.querySelector('header form #filterToggle'),
+		filterAdvanced: document.querySelector('header form .filter-advanced'),
+		filterPrice: document.querySelectorAll('header form .filter-text [type="number"]'),
+		filters: {
+			type: {
+				buy: document.querySelector('header form #filterTypeBuy'),
+				rent: document.querySelector('header form #filterTypeRent')
+			}
+		},
 		submit: document.querySelector('header form #submit')
 	};
 
@@ -26,6 +57,7 @@ var search = (function() {
 
 		utils.clearList(form.suggestions);
 		form.suggestions.classList.add('hidden');
+		form.filterAdvanced.classList.add('hidden');
 	};
 
 	var get = {
@@ -96,17 +128,26 @@ var search = (function() {
 				}
 			};
 
+			var getType = function() {
+				if (form.filters.type.buy.checked) {
+					return 'koop';
+				} else {
+					return 'huur';
+				}
+			};
+
 			// Early exit if input is empty
 			if (input() === '') {
 				return false;
 			}
 
-			utils.request('http://funda.kyrandia.nl/feeds/Aanbod.svc/json/' + config.apiKey + '/?type=' + 'koop' + '&zo=/' + input() + '/&page=' + 1 + '&pagesize=' + 25,
+			utils.request('http://funda.kyrandia.nl/feeds/Aanbod.svc/json/' + config.apiKey + '/?type=' + getType() + '&zo=/' + input() + '/&page=' + 1 + '&pagesize=' + 25,
 				function(data) {
 					var noResults = document.querySelector('#noResults');
-					var results = data.Objects;
+					var results = filter.by(data.Objects, filter.get());
 
-					utils.homepage(false);
+					// hides splashscreen
+					utils.splashScreen(false);
 
 					// Provides user with feedback, clears result feedback when there are no results
 					if (results.length === 0) {
@@ -158,8 +199,8 @@ var search = (function() {
 		},
 
 		// Requests information on detail page and renders it
-		details: function(id) {
-			utils.request('http://funda.kyrandia.nl/feeds/Aanbod.svc/json/detail/' + config.apiKey + '/koop/' + id + '/',
+		details: function(type, id) {
+			utils.request('http://funda.kyrandia.nl/feeds/Aanbod.svc/json/detail/' + config.apiKey + '/' + type + '/' + id + '/',
 				function(data) {
 					template.render.detail(data);
 
@@ -198,13 +239,94 @@ var search = (function() {
 
 	// Filters data based on user input
 	var filter = {
-			// var results = data.Objects;
+		// Get active filters
+		get: function() {
+			var filters = {};
+			var filterOpts = ['filterPriceFrom', 'filterPriceTo'];
 
-			// console.log(results);
+			filterOpts.map(function(option) {
+				var filterTag = document.querySelector('#' + option);
+				var filterType = filterTag.getAttribute('type');
+				var filterName = filter.convert(option);
 
-			// var filtered = results.filter(function(object) {
-			// 	return object.AantalKamers === 4;
-			// });
+				// Set value of property based on input filter type
+				if (filterType == 'text' || filterType == 'number') {
+					if (filterTag.value) {
+						filters[filterName] = filterTag.value
+					}
+				} else {
+					filters[filterName] = filterTag.checked
+				}
+			});
+
+			console.log(filters);
+
+			if (filter.length === 0) {
+				return false;
+			}
+			else {
+				return filters;
+			}
+		},
+
+		by: function(inputData, filters) {
+			// Return input data if no filters are applied
+			if (filter.count(filters) === 0) {
+				return inputData;
+			}
+
+			var outputData = function() {
+				var tempData = inputData;
+
+				if (filters.prijsVan) {
+					tempData = tempData.filter(function(object) {
+						if (object.Koopprijs && !object.Huurprijs) {
+							return object.Koopprijs > filters.prijsVan;
+						} else {
+							return object.Huurprijs > filters.prijsVan;
+						}
+					});
+				}
+				if (filters.prijsTot) {
+					tempData = tempData.filter(function(object) {
+						if (object.Koopprijs && !object.Huurprijs) {
+							return object.Koopprijs < filters.prijsTot;
+						} else {
+							return object.Huurprijs < filters.prijsTot;
+						}
+					});
+				}
+
+				return tempData;
+			}
+
+			return outputData();
+		},
+
+		// Counts properties of filter object
+		count: function(filters) {
+			var index = 0;
+
+			for (var key in filters) {
+				index++;
+			}
+
+			return index;
+		},
+
+		// Library that converts element ID's to filter properties
+		convert: function(id) {
+			switch (id) {
+				case 'filterPriceFrom':
+					return 'prijsVan';
+				break;
+				case 'filterPriceTo':
+					return 'prijsTot';
+				break;
+				default:
+					return id;
+			}
+		}
 	};
 
 	return {
