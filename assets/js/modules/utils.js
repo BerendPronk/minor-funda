@@ -61,9 +61,9 @@ var utils = (function() {
 
 	}) ();
 
-	// Checks index of value in chosen array
-	var checkArray = function(value, arr) {
-		return arr.indexOf(value);
+	// Checks index of item in chosen array
+	var checkArray = function(item, arr) {
+		return arr.indexOf(item);
 	};
 
 	// Converts nodelist to array
@@ -76,6 +76,14 @@ var utils = (function() {
 		while (list.firstChild) {
 			list.removeChild(list.firstChild);
 		}
+	};
+
+	// Removes a single item from list
+	var removeFromList = function(item, list) {
+		var nodeList = list.querySelectorAll(':scope > li');
+		var index = checkArray(item, convertToArray(nodeList));
+
+		list.removeChild(list.childNodes[index]);
 	};
 
 	// Converts number to thousand notation
@@ -120,6 +128,7 @@ var utils = (function() {
 		checkArray: checkArray,
 		convertToArray: convertToArray,
 		clearList: clearList,
+		removeFromList: removeFromList,
 		numberWithPeriods: numberWithPeriods,
 		setPeriods: setPeriods,
 		feedback: feedback
