@@ -3,13 +3,11 @@ var app = (function() {
 		template.render.pages();
 		router.init(template.navigation);
 		search.init();
+		storage.init();
 	};
 
 	return {
-		init: init,
-		template: template,
-		router: router,
-		search: search
+		init: init
 	};
 
 })();
