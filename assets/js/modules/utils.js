@@ -78,14 +78,6 @@ var utils = (function() {
 		}
 	};
 
-	// Removes a single item from list
-	var removeFromList = function(item, list) {
-		var nodeList = list.querySelectorAll(':scope > li');
-		var index = checkArray(item, convertToArray(nodeList));
-
-		list.removeChild(list.childNodes[index]);
-	};
-
 	// Converts number to thousand notation
 	var numberWithPeriods = function(number) {
 		return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
@@ -128,7 +120,6 @@ var utils = (function() {
 		checkArray: checkArray,
 		convertToArray: convertToArray,
 		clearList: clearList,
-		removeFromList: removeFromList,
 		numberWithPeriods: numberWithPeriods,
 		setPeriods: setPeriods,
 		feedback: feedback
