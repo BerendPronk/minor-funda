@@ -13,7 +13,8 @@ var template = (function() {
 		{
 			template: 'favorieten',
 			title: 'Favoriete woningen',
-			noFavorites: 'Er zijn nog geen favorieten toegevoegd.'
+			clearFavButton: 'Verwijder alles',
+			noFavorites: 'Je hebt geen favorieten toegevoegd.'
 		}
 	];
 
@@ -45,6 +46,11 @@ var template = (function() {
 					case 'favorieten':
 						section.querySelector('h2').textContent = page.title;
 						section.querySelector('#noFavorites').textContent = page.noFavorites;
+						section.querySelector('#clearFavButton').textContent = page.clearFavButton;
+						section.querySelector('#clearFavButton').addEventListener('click', function() {
+							// Removes all favorites
+							storage.clear();
+						});
 					break;
 				}
 			});
@@ -125,18 +131,14 @@ var template = (function() {
 				fav.className = 'fav';
 				fav.checked = storage.check(data.id);
 				fav.addEventListener('change', function() {
+					// Set item in local storage
 					storage.set(data.type(), this);
 
 					// Sets item on favorites page
-					search.get.favorites(storage.favorites.type(), storage.favorites.id());
-
-					// Removes DOM-element from favorites list
-					if (list === '#favorites') {
-						var item = this.parentNode;
-
-						utils.removeFromList(item, resultList);
+					if (localStorage.favoritesID) {
+						search.get.favorites(storage.favorites.type(), storage.favorites.id());
 					}
-				})
+				});
 				favLabel.setAttribute('for', data.id);
 				favLabel.className = 'fav-label';
 
@@ -186,10 +188,23 @@ var template = (function() {
 			var title = detailPage.querySelector('h2');
 			var subTitle = detailPage.querySelector('h3');
 			var img = detailPage.querySelector('img');
+			var fav = detailPage.querySelector('input');
+			var favLabel = detailPage.querySelector('label');
 			var price = detailPage.querySelector('#detailPrice');
 			var desc = detailPage.querySelector('article');
 
 			var detail = {
+				id: data.InternalId,
+				address: data.Adres,
+				zipCity: data.Postcode + ', ' + data.Plaats,
+				img: data.HoofdFoto,
+				type: function() {
+					if (data.Koopprijs && !data.Huurprijs) {
+						return 'koop';
+					} else {
+						return 'huur';
+					}
+				},
 				price: function() {
 					if (data.Koopprijs && !data.Huurprijs) {
 						return '<strong>€ ' + utils.numberWithPeriods(data.Koopprijs) + ' <abbr title="Kosten Koper">k.k.</abbr></strong>';
@@ -204,13 +219,31 @@ var template = (function() {
 				}
 			};
 
-			title.textContent = data.Adres;
+			title.textContent = detail.address;
 
-			subTitle.textContent = data.Postcode + ', ' + data.Plaats;
+			subTitle.textContent = detail.zipCity;
 
 			img.src = data.HoofdFoto;
-			img.alt = 'Foto van ' + data.Adres;
+			img.alt = 'Foto van ' + detail.address;
 
+			fav.type = 'checkbox';
+			fav.id = detail.id;
+			fav.className = 'fav';
+			fav.checked = storage.check(detail.id);
+			fav.addEventListener('change', function() {
+				// Set item in local storage
+				storage.set(detail.type(), this);
+
+				// Sets item on favorites page
+				if (localStorage.favoritesID) {
+					search.get.favorites(storage.favorites.type(), storage.favorites.id());
+				}
+			});
+			favLabel.setAttribute('for', detail.id);
+			favLabel.className = 'fav-label';
+
+			// Clears HTML before rendering new
+			price.innerHTML = '';
 			price.insertAdjacentHTML('afterbegin', detail.price());
 
 			detail.text().paragraphs.map(function(paragraph) {
