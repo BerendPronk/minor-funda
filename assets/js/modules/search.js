@@ -33,6 +33,11 @@ var search = (function() {
 			form.suggestions.classList.add('hidden');
 			form.filterAdvanced.classList.add('hidden');
 			get.results();
+
+			// Renders item suggestions if localStorage has filters
+			if (localStorage.filterTypes) {
+				get.interests();
+			}
 		});
 	};
 
@@ -101,6 +106,11 @@ var search = (function() {
 						suggestion.addEventListener('click', function() {
 							setInput(result.Display.Naam);
 							get.results(result.GeoIdentifier);
+
+							// Renders item suggestions if localStorage has filters
+							if (localStorage.filterTypes) {
+								get.interests(result.GeoIdentifier);
+							}
 						});
 
 						form.suggestions.appendChild(suggestion);
@@ -144,9 +154,9 @@ var search = (function() {
 			utils.request('http://funda.kyrandia.nl/feeds/Aanbod.svc/json/' + config.apiKey + '/?type=' + getType() + '&zo=/' + input() + '/&page=' + 1 + '&pagesize=' + 25,
 				function(data) {
 					var noResults = document.querySelector('#noResults');
-					var results = filter.by(data.Objects, filter.get());
+					var results = filter.by(data.Objects, filter.form());
 
-					// hides splashscreen
+					// Hides splashscreen
 					utils.splashScreen(false);
 
 					// Provides user with feedback, clears result feedback when there are no results
@@ -213,6 +223,7 @@ var search = (function() {
 		// Requests information for each item in favorites
 		favorites: function(type, favorites) {
 			var favoritesList = document.querySelector('#favorites');
+
 			// Hides empty favorites message
 			var noFavorites = document.querySelector('#noFavorites');
 			noFavorites.classList.add('hidden');
@@ -220,6 +231,7 @@ var search = (function() {
 			// Clears favorites before adding a new list
 			utils.clearList(favoritesList);
 
+			// Index used to receive the index of the type storage, to check whether type = 'koop' or 'huur'
 			favorites.map(function(id, index) {
 				utils.request('http://funda.kyrandia.nl/feeds/Aanbod.svc/json/detail/' + config.apiKey + '/' + type[index] + '/' + id + '/',
 					function(data) {
@@ -227,8 +239,48 @@ var search = (function() {
 						var results = [data];
 
 						template.render.result('#favorites', results);
+
+						// Sets suggestion filters for future search requests
+						storage.filters(data);
 					});
 			})
+		},
+
+		// Requests information with localStorage filter applied
+		interests: function(value) {
+
+			// Checks if input came from suggestion, replaces spaces with dashes if not
+			var input = function() {
+				if (typeof value === 'string') {
+					return value;
+				} else {
+					return form.search.value.replace(/ /g, '-');
+				}
+			};
+
+			var getType = function() {
+				if (form.filters.type.buy.checked) {
+					return 'koop';
+				} else {
+					return 'huur';
+				}
+			};
+
+			utils.request('http://funda.kyrandia.nl/feeds/Aanbod.svc/json/' + config.apiKey + '/?type=' + getType() + '&zo=/' + input() + '/&page=' + 1 + '&pagesize=' + 25,
+				function(data) {
+					var interestsList = document.querySelector('#interests');
+					var results = filter.by(data.Objects, filter.interest(localStorage.filterTypes.split(','), localStorage.filterValues.split(',')), true);
+
+					// Toggles view of interests for user
+					if (results.length > 0) {
+						interestsList.classList.remove('hidden');
+					} else {
+						interestsList.classList.add('hidden');
+					}
+
+					// Renders list with interesting items for user
+					template.render.result('#interests', results);
+				});
 		},
 
 		// Renders breadcrumb for detail page
@@ -260,12 +312,96 @@ var search = (function() {
 
 	// Filters data based on user input
 	var filter = {
-		// Get active filters
-		get: function() {
+		// Set filters based on favorites
+		interest: function(suggFilterTypes, suggFilterValues) {
 			var filters = {};
-			var filterOpts = ['filterPriceFrom', 'filterPriceTo'];
 
-			filterOpts.map(function(option) {
+			var areaFilters = [];
+			var roomFilters = [];
+			var buyPriceFilters = [];
+			var rentPriceFilters = [];
+
+			// Adds filters to single object
+			suggFilterTypes.map(function(filterType, index) {
+				var filterValue = suggFilterValues[index];
+
+				switch (filterType) {
+					case 'area':
+						areaFilters.push(filterValue);
+					break;
+					case 'rooms':
+						roomFilters.push(filterValue);
+					break;
+					case 'buyPrice':
+						buyPriceFilters.push(filterValue);
+					break;
+					case 'rentPrice':
+						rentPriceFilters.push(filterValue);
+					break;
+				}
+			});
+
+			// Sets area filter
+			areaFilters.map(function(value) {
+				if (value === null || value === 'null') {
+					return false;
+				}
+
+				var lowestValue = areaFilters.reduce(function(a, b) {
+					return Math.min(a, b);
+				});
+
+				filters['Woonoppervlakte'] = lowestValue;
+			});
+
+			// Sets room filter
+			roomFilters.map(function(value) {
+				if (value === null || value === 'null') {
+					return false;
+				}
+
+				var sum = roomFilters.reduce(function(a, b) {
+					return Number(a) + Number(b);
+				});
+
+				filters['AantalKamers'] = Math.round(sum / roomFilters.length);
+			});
+
+			// Sets maximum buy price
+			buyPriceFilters.map(function(value) {
+				if (value === null || value === 'null') {
+					return false;
+				}
+
+				var highestValue = buyPriceFilters.reduce(function(a, b) {
+					return Math.max(a, b);
+				});
+
+				filters['Koopprijs'] = highestValue;
+			});
+
+			// Sets maximum rent price
+			rentPriceFilters.map(function(value) {
+				if (value === null || value === 'null') {
+					return false;
+				}
+
+				var highestValue = rentPriceFilters.reduce(function(a, b) {
+					return Math.max(a, b);
+				});
+
+				filters['Huurprijs'] = highestValue;
+			});
+
+			return filters;
+		},
+
+		// Get active filters
+		form: function() {
+			var filters = {};
+			var setFilterOpts = ['filterPriceFrom', 'filterPriceTo'];
+
+			setFilterOpts.map(function(option) {
 				var filterTag = document.querySelector('#' + option);
 				var filterType = filterTag.getAttribute('type');
 				var filterName = filter.convert(option);
@@ -273,24 +409,17 @@ var search = (function() {
 				// Set value of property based on input filter type
 				if (filterType == 'text' || filterType == 'number') {
 					if (filterTag.value) {
-						filters[filterName] = filterTag.value
+						filters[filterName] = filterTag.value;
 					}
 				} else {
-					filters[filterName] = filterTag.checked
+					filters[filterName] = filterTag.checked;
 				}
 			});
 
-			console.log(filters);
-
-			if (filter.length === 0) {
-				return false;
-			}
-			else {
-				return filters;
-			}
+			return filters;
 		},
 
-		by: function(inputData, filters) {
+		by: function(inputData, filters, interests) {
 			// Return input data if no filters are applied
 			if (filter.count(filters) === 0) {
 				return inputData;
@@ -314,6 +443,36 @@ var search = (function() {
 							return object.Koopprijs < filters.prijsTot;
 						} else {
 							return object.Huurprijs < filters.prijsTot;
+						}
+					});
+				}
+				if (filters.AantalKamers) {
+					tempData = tempData.filter(function(object) {
+						return object.AantalKamers === filters.AantalKamers;
+					});
+				}
+				if (filters.Koopprijs) {
+					tempData = tempData.filter(function(object) {
+						return object.Koopprijs <= filters.Koopprijs;
+					});
+				}
+				if (filters.Huurprijs) {
+					tempData = tempData.filter(function(object) {
+						return object.Huurprijs <= filters.Huurprijs;
+					});
+				}
+				// Currently disabled filter
+				// if (filters.Woonoppervlakte) {
+				// 	tempData = tempData.filter(function(object) {
+				// 		return object.Woonoppervlakte >= filters.Woonoppervlakte;
+				// 	});
+				// }
+
+				// Filters on items already existing in favorites
+				if (interests) {
+					tempData = tempData.filter(function(object) {
+						if (!storage.check(object.Id)) {
+							return object.Id
 						}
 					});
 				}
@@ -344,6 +503,18 @@ var search = (function() {
 				case 'filterPriceTo':
 					return 'prijsTot';
 				break;
+				case 'area':
+					return 'Woonoppervlakte';
+				break;
+				case 'rooms':
+					return 'AantalKamers';
+				break;
+				case 'buyPrice':
+					return 'Koopprijs';
+				break;
+				case 'rentPrice':
+					return 'Huurprijs';
+				break;
 				default:
 					return id;
 			}
@@ -352,7 +523,8 @@ var search = (function() {
 
 	return {
 		init: init,
-		get: get
+		get: get,
+		filter: filter
 	};
 
 }) ();
