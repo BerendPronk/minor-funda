@@ -38,7 +38,7 @@
 		<form action="">
 			<fieldset>
 				<label for="search">Zoek woningen</label>
-				<input id="search" type="text" placeholder="Plaats, buurt, adres, et cetera">
+				<input id="search" type="text" placeholder="Plaats, buurt, adres, et cetera" autofocus>
 				<ul id="suggestions"></ul>
 			</fieldset>
 			<fieldset id="filter">
@@ -89,15 +89,16 @@
 				<h2></h2>
 				<h3></h3>
 
-				<img>
+				<section class="img-block">
+					<img>
 
-				<p id="detailPrice"></p>
+					<input>
+					<label></label>
+
+					<p id="detailPrice"></p>
+				</section>
 
 				<article></article>
-
-				<ul>
-					<li>hier extra gegevens</li>
-				</ul>
 			</section>
 		</li>
 		<li>
@@ -105,6 +106,8 @@
 				<h2></h2>
 
 				<p id="resultAmount"></p>
+
+				<ul id="interests" class="hidden"></ul>
 
 				<ul id="results"></ul>
 
@@ -114,6 +117,10 @@
 		<li>
 			<section id="favorieten">
 				<h2></h2>
+
+				<section class="btn-block">
+					<button id="clearFavButton"></button>
+				</section>
 
 				<ul id="favorites"></ul>
 
