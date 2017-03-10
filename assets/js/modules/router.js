@@ -1,7 +1,7 @@
 var router = (function() {
 	var init = function(pagelist) {
-		// Sets splash screen
-		utils.splashScreen(false);
+		// Sets splashscreen
+		utils.splashScreen(true);
 
 		// Navigates to result page
 		navigate(pagelist[1]);
