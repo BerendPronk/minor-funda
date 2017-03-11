@@ -1,4 +1,4 @@
-# Funda Coding Challenge 2017
+# Funda: Coding Challenge 2017
 The first official challenge of the Web Development minor, offered by the Amsterdam University of Applied Sciences in cooperation with Funda Real Estate.  
 In the timespan of a single week every contestant needed to develop a working prototype offering new ideas for the user experience of Funda. This week included the briefing at and final presentations. I chose to expand on the idea of adding favourites, by making the system learn from the use people have with the platform.
 
