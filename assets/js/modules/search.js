@@ -456,12 +456,12 @@ var search = (function() {
 						return object.Koopprijs <= filters.Koopprijs;
 					});
 				}
-				if (filters.Huurprijs) {
-					tempData = tempData.filter(function(object) {
-						return object.Huurprijs <= filters.Huurprijs;
-					});
-				}
-				// Currently disabled filter
+				// Currently disabled filters
+				// if (filters.Huurprijs) {
+				// 	tempData = tempData.filter(function(object) {
+				// 		return object.Huurprijs <= filters.Huurprijs;
+				// 	});
+				// }
 				// if (filters.Woonoppervlakte) {
 				// 	tempData = tempData.filter(function(object) {
 				// 		return object.Woonoppervlakte >= filters.Woonoppervlakte;
