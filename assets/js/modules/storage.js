@@ -1,15 +1,15 @@
 var storage = (function() {
 	var interestsList = document.querySelector('#interests');
 	var favoritesList = document.querySelector('#favorites');
-	var favControls = document.querySelector('#favorieten .btn-block');
+	var favControlBlock = document.querySelector('#favorieten .btn-block');
 	var noFavorites = document.querySelector('#noFavorites');
 
 	// Toggles DOM Elements to provice user with feedback
 	var init = function() {
 		if (localStorage.favoritesID) {
-			controls(true);
+			favControls(true);
 		} else {
-			controls(false);
+			favControls(false);
 		}
 	};
 
@@ -24,7 +24,7 @@ var storage = (function() {
 	var set = function(itemType, item) {
 		// Toggles item in favorites
 		if (item.checked) {
-			controls(true);
+			favControls(true);
 
 			// Checks if favorites list exists
 			if (localStorage.favoritesID && (utils.checkArray(item.id, favorites.id()) === -1)) {
@@ -67,7 +67,7 @@ var storage = (function() {
 
 		// Checks if favorites are empty
 		if (favorites.id().length === 0) {
-			controls(false);
+			favControls(false);
 		}
 	};
 
@@ -80,7 +80,7 @@ var storage = (function() {
 		interestsList.classList.add('hidden');
 		utils.clearList(favoritesList);
 
-		controls(false);
+		favControls(false);
 
 		// Switches checkbox of set favorites to false
 		utils.convertToArray(hearts).map(function(checkbox) {
@@ -89,12 +89,12 @@ var storage = (function() {
 	};
 
 	// Toggles DOM Elements to provide user with feedback
-	var controls = function(state) {
+	var favControls = function(state) {
 		if (state === true) {
-			favControls.classList.remove('hidden');
+			favControlBlock.classList.remove('hidden');
 			noFavorites.classList.add('hidden');
 		} else {
-			favControls.classList.add('hidden');
+			favControlBlock.classList.add('hidden');
 			noFavorites.classList.remove('hidden');
 		}
 	}
@@ -150,15 +150,9 @@ var storage = (function() {
 		if (localStorage.filterTypes) {
 			localStorage.filterTypes += ',' + newTypes;
 			localStorage.filterValues += ',' + newValues;
-
-			// Set local
-			// search.filter.interest(localStorage.filterTypes.split(','), localStorage.filterValues.split(','));
 		} else {
 			localStorage.filterTypes = newTypes;
 			localStorage.filterValues = newValues;
-
-			// Initializes localStorage filters
-			// search.filter.interest(localStorage.filterTypes.split(','), localStorage.filterValues.split(','));
 		}
 	};
 
