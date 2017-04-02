@@ -26,3 +26,10 @@ The list is as follows:
 - Adding a loading spinner, for users with a slow internet connection
 - Expanding the detail page of the houses with more information
 - Some bugfixes I didn't have enough time for that week
+
+## License
+[MIT](https://github.com/BerendPronk/minor-funda/blob/master/LICENSE.md)
+
+Copyright - Berend Pronk
+
+2017
